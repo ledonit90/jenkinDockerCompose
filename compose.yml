@@ -1,0 +1,42 @@
+version: "1"
+networks:
+  jenkins:
+    name: jenkins
+    driver: bridge
+services:
+  dockerdind:
+    image: docker:dind
+    user: root
+    container_name: jenkins-docker
+    privileged: true
+    networks:
+      jenkins:
+        aliases:
+          - docker
+    ports:
+      - '2376:2376'
+    volumes:
+      - /root/docker-certs-jk:/jenkincerts/client
+      - /root/jenkins-home:/var/jenkins_home
+    environment:
+      - DOCKER_TLS_CERTDIR=/jenkincerts
+  jenkins:
+    image: myjenkin
+    container_name: jenkins
+    build:
+      context: .
+    user: root
+    networks:
+      - jenkins
+    ports:
+      - '8180:8000'
+      - '5000:50000'
+    volumes:
+      - /root/docker-certs-jk:/jenkincerts/client
+      - /root/jenkinsdata:/var/jenkins_home
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/jenkincerts/client
+      - DOCKER_TLS_VERIFY=1
+    depends_on:
+      - dockerdind
