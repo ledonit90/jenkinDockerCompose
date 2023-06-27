@@ -1,5 +1,7 @@
+FROM node:18.12.0 as nodejs
 FROM jenkins/jenkins
 USER root
+COPY --from=nodejs /usr/local /usr/local
 RUN apt-get update && apt-get install -y lsb-release
 RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
   https://download.docker.com/linux/debian/gpg
